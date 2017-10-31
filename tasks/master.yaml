@@ -13,5 +13,5 @@
   command: 'sed -i s/hostname=.*/hostname={{ ambari_server }}/ /etc/ambari-agent/conf/ambari-agent.ini'
   notify:
     - reload systemd
-    - start-ambari-server
+    - start-ambari-agent
 

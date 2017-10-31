@@ -1,22 +1,17 @@
 ---
 - include: common.yaml
-  when: ansible_os_family != "Windows"
-  
+  when: role != cluster_orchestrator
 - include: ambari.yaml
-  tags: ['ambari']
-  when: ansible_os_family != "Windows"
-  
+  when: role == "ambari"
+
 - include: cluster_node.yaml
-  tags: ['node']
-  when: ansible_os_family != "Windows"
+  when: role == "node"
 
 - include: master.yaml
-  tags: ['master']
-  when: ansible_os_family != "Windows"
+  when: role == "master"
 
 - include: cluster.yaml
-  tags: ['ambari']
-  when: ansible_os_family != "Windows"
+  when: role == "cluster_orchestrator"
 
 
 

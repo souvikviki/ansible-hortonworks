@@ -10,6 +10,6 @@
   become: true
   notify:
     - reload systemd
-    - start-ambari-server
+    - start-ambari-agent
 
 

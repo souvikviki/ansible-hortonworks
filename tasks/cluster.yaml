@@ -1,6 +1,3 @@
----
-  
-# list registered cluster hosts
 - meta: flush_handlers
 - uri:
     url: "http://{{inventory_hostname}}:8080/api/v1/hosts"
@@ -18,16 +15,24 @@
 - name: write the registered cluster hosts to file
   template: 
     src:  templates/hostmap.tpl 
-    dest: ~/hostmap.json
-- name: register the contents of the hostmap.json
-  command: cat ~/hostmap.json
+    dest: /tmp/hostmap.json
+- name: get the hostmap in here
+  slurp:
+    src: /tmp/hostmap.json
   register: hostmap
+
+
+    # msg: "{{ mounts['content'] | b64decode }}"
+# - name: register the contents of the hostmap.json
+#   command: cat /tmp/hostmap.json
+#   register: hostmap
   
 # IMPORTANT NOTE: https://github.com/ansible/ansible-modules-core/pull/1011
 # REQUIRES A SPACE IN FRONT OF THE "lookup()" function in the "body:" VALUE OF THE URI MODULE - DON'T REMOVE THE SPACES!
 #
 # post the blueprint and hostmap to initiate cluster build
-- uri:
+- name: upload cluster blueprint
+  uri:
     url: "http://{{inventory_hostname}}:8080/api/v1/blueprints/testclus"
     method: POST
     HEADER_X-Requested-By: Pythian
@@ -37,13 +42,19 @@
     force_basic_auth: yes
     body_format: raw
     body: " {{ lookup('file', 'files/testclus.json') }}"
-- uri:
+- debug:
+    msg: "{{ hostmap.content | b64decode }}"
+# - name: add hosts to the ambari cluster
+- name: register hosts for cluster
+  uri:
     url: "http://{{inventory_hostname}}:8080/api/v1/clusters/testclus"
     method: POST
     HEADER_X-Requested-By: Pythian
+    HEADER_Content-Type: "application/json"
     status_code: 202, 500 
     user: "{{ ambari_user }}"
     password: "{{ ambari_password }}"
     force_basic_auth: yes
-    body_format: raw
-    body: " {{ hostmap.stdout }}"
+    body_format: json
+    body: "{{ hostmap.content | b64decode }}"
+    # body: " {{ lookup('file','/tmp/hostmap.json') }}"
