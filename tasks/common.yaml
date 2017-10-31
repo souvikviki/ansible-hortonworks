@@ -1,0 +1,55 @@
+---
+# Run some tasks to configure Hadoop dependencies
+# requires var_java_ver and var_java_build to be defined
+- name: install dependency packages (RedHat)
+  when: ansible_os_family == 'RedHat'
+  yum: name={{ item }} state=latest
+  become: true
+  with_items:
+    - zip
+    - unzip
+    - wget
+    - sysstat
+    - ntp
+    - telnet
+    
+- name: configure ntp (Redhat)
+  become: true
+  when: ansible_os_family == 'RedHat'
+  service: name=ntpd enabled=yes state=restarted
+
+
+- name: disable transparent hugepages (Redhat, 1/2)
+  when: ansible_os_family == 'RedHat'
+  shell: 'echo never > /sys/kernel/mm/transparent_hugepage/enabled'
+  become: true
+
+- name: disable transparent hugepages (RedHat, 2/2)
+  when: ansible_os_family == 'RedHat'
+  shell: 'echo never > /sys/kernel/mm/transparent_hugepage/defrag'
+  become: true
+
+- name: configure selinux
+  selinux: state=disabled
+  become: true
+  
+- name: configure filehandles
+  sysctl: name=fs.file-max value=12288 
+  become: true
+
+- name: install java runtime environment (RedHat)
+  when: ansible_os_family == 'RedHat'
+  yum: name=java-1.7.0-openjdk-headless.x86_64 state=present
+  become: true
+
+- name: fetch the ambari yum repo
+  when: ansible_os_family == 'RedHat'
+  become: true
+  get_url:
+    url: http://public-repo-1.hortonworks.com/ambari/centos7/2.x/updates/2.5.2.0/ambari.repo
+    dest: /etc/yum.repos.d/ambari.repo
+
+- name: install EPEL yum repo (RedHat)
+  when: ansible_os_family == 'RedHat'
+  yum: name=http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm state=present
+  become: true

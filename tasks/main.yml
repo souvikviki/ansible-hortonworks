@@ -1,0 +1,22 @@
+---
+- include: common.yaml
+  when: ansible_os_family != "Windows"
+  
+- include: ambari.yaml
+  tags: ['ambari']
+  when: ansible_os_family != "Windows"
+  
+- include: cluster_node.yaml
+  tags: ['node']
+  when: ansible_os_family != "Windows"
+
+- include: master.yaml
+  tags: ['master']
+  when: ansible_os_family != "Windows"
+
+- include: cluster.yaml
+  tags: ['ambari']
+  when: ansible_os_family != "Windows"
+
+
+

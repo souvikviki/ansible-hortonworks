@@ -1,0 +1,15 @@
+---
+# configure the cnode hosts 
+- name: install the ambari agent (RedHat)
+  when: ansible_os_family == 'RedHat'
+  yum: name=ambari-agent state=latest
+  become: true
+
+- name: configure the ambari agent
+  command: 'sed -i s/hostname=.*/hostname={{ ambari_server }}/ /etc/ambari-agent/conf/ambari-agent.ini'
+  become: true
+  notify:
+    - reload systemd
+    - start-ambari-server
+
+

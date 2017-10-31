@@ -1,0 +1,17 @@
+---
+# configure the mnode hosts
+- name: install the MySQL community repository (RedHat)
+  when: ansible_os_family == 'RedHat'
+  yum: name=http://dev.mysql.com/get/mysql-community-release-el7-5.noarch.rpm state=present
+  become: true
+- name: install the ambari agent (RedHat)
+  become: true
+  when: ansible_os_family == 'RedHat'
+  yum: name=ambari-agent state=latest
+- name: configure the ambari agent
+  become: true
+  command: 'sed -i s/hostname=.*/hostname={{ ambari_server }}/ /etc/ambari-agent/conf/ambari-agent.ini'
+  notify:
+    - reload systemd
+    - start-ambari-server
+

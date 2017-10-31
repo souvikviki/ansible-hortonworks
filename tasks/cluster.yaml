@@ -1,0 +1,49 @@
+---
+  
+# list registered cluster hosts
+- meta: flush_handlers
+- uri:
+    url: "http://{{inventory_hostname}}:8080/api/v1/hosts"
+    method: GET
+    HEADER_X-Requested_by: Pythian
+    HEADER_Content-Type: application/json
+    return_content: yes
+    user: "{{ ambari_user }}"
+    password: "{{ ambari_password }}"
+    force_basic_auth: yes
+  register: resp_hosts
+- name: remove hosts.out if it exists
+  file: path=/tmp/hosts.out state=absent
+  become: true
+- name: write the registered cluster hosts to file
+  template: 
+    src:  templates/hostmap.tpl 
+    dest: ~/hostmap.json
+- name: register the contents of the hostmap.json
+  command: cat ~/hostmap.json
+  register: hostmap
+  
+# IMPORTANT NOTE: https://github.com/ansible/ansible-modules-core/pull/1011
+# REQUIRES A SPACE IN FRONT OF THE "lookup()" function in the "body:" VALUE OF THE URI MODULE - DON'T REMOVE THE SPACES!
+#
+# post the blueprint and hostmap to initiate cluster build
+- uri:
+    url: "http://{{inventory_hostname}}:8080/api/v1/blueprints/testclus"
+    method: POST
+    HEADER_X-Requested-By: Pythian
+    status_code: 201, 409
+    user: "{{ ambari_user }}"
+    password: "{{ ambari_password }}"
+    force_basic_auth: yes
+    body_format: raw
+    body: " {{ lookup('file', 'files/testclus.json') }}"
+- uri:
+    url: "http://{{inventory_hostname}}:8080/api/v1/clusters/testclus"
+    method: POST
+    HEADER_X-Requested-By: Pythian
+    status_code: 202, 500 
+    user: "{{ ambari_user }}"
+    password: "{{ ambari_password }}"
+    force_basic_auth: yes
+    body_format: raw
+    body: " {{ hostmap.stdout }}"

@@ -1,0 +1,4 @@
+---
+remote_user: centos
+ambari_user: admin
+ambari_password: admin

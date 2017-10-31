@@ -1,0 +1,11 @@
+---
+# configure the utility host
+- name: install the ambari server
+  yum: name=ambari-server state=latest
+  become: true
+- name: configure the ambari server
+  command: ambari-server setup -j /usr/lib/jvm/jre-1.7.0-openjdk -s
+  become: true
+  notify:
+    - reload systemd
+    - start-ambari-server
