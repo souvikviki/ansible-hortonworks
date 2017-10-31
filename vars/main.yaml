@@ -2,3 +2,4 @@
 remote_user: centos
 ambari_user: admin
 ambari_password: admin
+ambari_server: {{ lookup('file','~/ambariserver.txt') }}
