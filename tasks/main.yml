@@ -1,6 +1,7 @@
 ---
 - include: common.yaml
-  when: role != cluster_orchestrator
+  when: (role != "cluster_orchestrator")
+  
 - include: ambari.yaml
   when: role == "ambari"
 
