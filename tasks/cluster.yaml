@@ -55,6 +55,6 @@
     user: "{{ ambari_user }}"
     password: "{{ ambari_password }}"
     force_basic_auth: yes
-    body_format: raw
+    body_format: json
     #body: "{{ hostmap.content | b64decode }}"
     body: " {{ lookup('file','/tmp/hostmap.json') }}"
