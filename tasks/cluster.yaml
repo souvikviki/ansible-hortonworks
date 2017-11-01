@@ -1,31 +1,23 @@
 - meta: flush_handlers
-- uri:
-    url: "http://{{ambari_server}}:8080/api/v1/hosts"
-    method: GET
-    HEADER_X-Requested_by: Pythian
-    HEADER_Content-Type: application/json
-    return_content: yes
-    user: "{{ ambari_user }}"
-    password: "{{ ambari_password }}"
-    force_basic_auth: yes
-  register: resp_hosts
-- name: remove hosts.out if it exists
-  file: path=/tmp/hosts.out state=absent
-  become: true
-- name: write the registered cluster hosts to file
-  template: 
-    src:  templates/hostmap.tpl 
-    dest: /tmp/hostmap.json
-- name: get the hostmap in here
-  slurp:
-    src: /tmp/hostmap.json
-  register: hostmap
-
-
-    # msg: "{{ mounts['content'] | b64decode }}"
-# - name: register the contents of the hostmap.json
-#   command: cat /tmp/hostmap.json
-#   register: hostmap
+ - name: retrieve hosts from ambari 
+    uri:
+      url: "http://{{ambari_server}}:8080/api/v1/hosts"
+      method: GET
+      HEADER_X-Requested_by: Pythian
+      HEADER_Content-Type: application/json
+      return_content: yes
+      user: "{{ ambari_user }}"
+      password: "{{ ambari_password }}"
+      force_basic_auth: yes
+    register: resp_hosts
+  - name: remove hostmap.json if it exists
+    file: path=~/hostmap.json state=absent
+    become: true
+  - name: write the registered cluster hosts to file
+    template: 
+      src: templates/hostmap.tpl 
+      dest: ~/hostmap.json
+    
   
 # IMPORTANT NOTE: https://github.com/ansible/ansible-modules-core/pull/1011
 # REQUIRES A SPACE IN FRONT OF THE "lookup()" function in the "body:" VALUE OF THE URI MODULE - DON'T REMOVE THE SPACES!
@@ -42,19 +34,17 @@
     force_basic_auth: yes
     body_format: raw
     body: " {{ lookup('file', 'files/testclus.json') }}"
-- debug:
-    msg: "{{ hostmap.content | b64decode }}"
-# - name: add hosts to the ambari cluster
+
 - name: register hosts for cluster
-  uri:
-    url: "http://{{ambari_server}}:8080/api/v1/clusters/testclus"
-    method: POST
-    HEADER_X-Requested-By: Pythian
-    HEADER_Content-Type: "application/json"
-    status_code: 202, 409 
-    user: "{{ ambari_user }}"
-    password: "{{ ambari_password }}"
-    force_basic_auth: yes
-    body_format: json
-    body: "{{ hostmap.content | b64decode }}"
-    #body: " {{ lookup('file','/tmp/hostmap.json') }}"
+   uri:
+      url: "http://{{var_ambari_server}}:8080/api/v1/clusters/testclus"
+      method: POST
+      HEADER_X-Requested-By: Pythian
+      status_code: 202, 500 
+      user: "{{ ambari_user }}"
+      password: "{{ ambari_password }}"
+      force_basic_auth: yes
+      body_format: raw
+      body: " {{ lookup('file', '~/hostmap.json') }}"
+
+  
