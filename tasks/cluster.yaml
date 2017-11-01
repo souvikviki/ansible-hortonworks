@@ -37,7 +37,7 @@
 
 - name: register hosts for cluster
   uri:
-    url: "http://{{var_ambari_server}}:8080/api/v1/clusters/testclus"
+    url: "http://{{ambari_server}}:8080/api/v1/clusters/testclus"
     method: POST
     HEADER_X-Requested-By: Pythian
     status_code: 202, 500 
